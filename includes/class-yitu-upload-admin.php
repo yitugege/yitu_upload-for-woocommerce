@@ -157,97 +157,152 @@ class Yitu_Upload_Admin {
             return;
         }
 
+        // 获取订单ID
+        $order_id = $order->get_id();
+        
+        // 从数据库获取上传的文件记录
         global $wpdb;
         $files = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}yitu_upload_files WHERE order_id = %d",
-            $order->get_id()
+            "SELECT * FROM {$wpdb->prefix}yitu_upload_files WHERE order_id = %d ORDER BY upload_time DESC",
+            $order_id
         ));
-
-        if ($files) {
-            echo '<div class="yitu-upload-files">';
+        
+        if (!empty($files)) {
+            echo '<div class="yitu-uploaded-files">';
+            echo '<ul class="yitu-files-list">';
+            
             foreach ($files as $file) {
-                // 加载OSS类
+                // 获取签名后的URL
                 require_once YITU_UPLOAD_PLUGIN_DIR . 'includes/class-yitu-upload-oss.php';
                 $oss = new Yitu_Upload_OSS();
                 $signed_url = $oss->get_signed_url($file->file_url, 300); // 5分钟有效期
+                
+                // 获取文件扩展名
+                $file_ext = strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION));
+                
+                echo '<li class="yitu-file-item">';
                 if ($signed_url) {
-                    echo '<div class="yitu-upload-file-item">';
-                    echo '<a href="' . esc_url($signed_url) . '" target="_blank" class="yitu-upload-file-link">';
-                    echo '<img src="' . esc_url($signed_url) . '" class="yitu-upload-file-image" />';
-                    echo '</a>';
-                    echo '<div class="yitu-upload-file-info">';
-                    echo '<span class="yitu-upload-file-name">' . esc_html($file->file_name) . '</span>';
-                    echo '<span class="yitu-upload-file-time">' . esc_html(wp_date('Y-m-d H:i:s', strtotime($file->upload_time))) . '</span>';
-                    echo '</div>';
-                    echo '</div>';
+                    if ($file_ext === 'pdf') {
+                        // PDF文件显示
+                        echo '<div class="pdf-preview" onclick="window.open(\'' . esc_url($signed_url) . '\', \'_blank\');">';
+                        echo '<div class="pdf-icon"><i class="dashicons dashicons-pdf"></i></div>';
+                        echo '<span class="pdf-text">' . esc_html__('Ver PDF', 'yitu-upload-wc') . '</span>';
+                        echo '</div>';
+                    } else {
+                        // 图片文件显示
+                        echo '<a href="' . esc_url($signed_url) . '" class="preview-link" data-fancybox="gallery" title="' . esc_attr($file->file_name) . '">';
+                        echo '<img src="' . esc_url($signed_url) . '" class="preview-image" alt="' . esc_attr($file->file_name) . '" />';
+                        echo '</a>';
+                    }
                 } else {
-                    echo '<div class="yitu-upload-file-error">';
-                    echo __('Error loading image', 'yitu-upload-wc');
-                    echo '</div>';
+                    echo '<p class="error">' . esc_html__('Error al cargar el archivo', 'yitu-upload-wc') . '</p>';
                 }
+                echo '</li>';
             }
+            
+            echo '</ul>';
             echo '</div>';
+            
+            // 添加样式
             echo '<style>
-                .yitu-upload-files {
+                .yitu-uploaded-files {
+                    margin: 0;
+                    padding: 0;
+                }
+                .yitu-files-list {
+                    list-style: none;
+                    margin: 0;
+                    padding: 0;
                     display: flex;
                     flex-wrap: wrap;
-                    gap: 10px;
-                    margin: 10px 0;
+                    gap: 8px;
                 }
-                .yitu-upload-file-item {
-                    position: relative;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    padding: 5px;
-                    background: #fff;
-                    transition: all 0.3s ease;
+                .yitu-file-item {
+                    margin: 0;
+                    padding: 0;
+                    border: none;
+                    background: none;
                 }
-                .yitu-upload-file-item:hover {
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                }
-                .yitu-upload-file-link {
+                .preview-link {
                     display: block;
-                }
-                .yitu-upload-file-image {
                     width: 50px;
                     height: 50px;
+                    border-radius: 4px;
+                    overflow: hidden;
+                    border: 1px solid #ddd;
+                    transition: all 0.2s ease;
+                }
+                .preview-link:hover {
+                    border-color: #2271b1;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+                .preview-image {
+                    width: 100%;
+                    height: 100%;
                     object-fit: cover;
-                    border-radius: 3px;
-                }
-                .yitu-upload-file-info {
-                    display: none;
-                    position: absolute;
-                    bottom: 100%;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: rgba(0,0,0,0.8);
-                    color: #fff;
-                    padding: 5px 10px;
-                    border-radius: 3px;
-                    font-size: 12px;
-                    white-space: nowrap;
-                    z-index: 100;
-                }
-                .yitu-upload-file-item:hover .yitu-upload-file-info {
                     display: block;
                 }
-                .yitu-upload-file-error {
+                .pdf-preview {
+                    width: 50px;
+                    height: 50px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    background: #f5f5f5;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    transition: all 0.2s ease;
+                    cursor: pointer;
+                }
+                .pdf-preview:hover {
+                    border-color: #2271b1;
+                    background: #fff;
+                }
+                .pdf-icon {
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 2px;
+                }
+                .pdf-icon .dashicons-pdf {
+                    font-size: 24px;
+                    width: 24px;
+                    height: 24px;
+                    color: #e74c3c;
+                }
+                .pdf-text {
+                    font-size: 10px;
+                    color: #666;
+                    text-align: center;
+                    line-height: 1;
+                }
+                .error {
                     color: #dc3545;
-                    font-size: 13px;
-                    padding: 5px;
+                    font-size: 12px;
+                    margin: 0;
+                    padding: 4px;
+                    background: #fff;
+                    border: 1px solid #dc3545;
+                    border-radius: 4px;
                 }
             </style>';
-        } else {
-            echo '<div class="yitu-upload-empty">';
-            echo __('No comprobante de pago subido', 'yitu-upload-wc');
-            echo '</div>';
-            echo '<style>
-                .yitu-upload-empty {
-                    color: #6c757d;
-                    font-style: italic;
-                    padding: 10px;
-                }
-            </style>';
+
+            // 添加JavaScript
+            wp_enqueue_script('fancybox', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js', array('jquery'), '5.0', true);
+            wp_enqueue_style('fancybox', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css');
+            wp_enqueue_style('dashicons');
+            
+            wp_add_inline_script('fancybox', '
+                jQuery(document).ready(function($) {
+                    // 初始化Fancybox
+                    Fancybox.bind("[data-fancybox]", {
+                        // 配置项
+                    });
+                });
+            ');
         }
     }
 

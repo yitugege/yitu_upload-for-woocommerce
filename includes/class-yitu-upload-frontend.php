@@ -106,7 +106,7 @@ class Yitu_Upload_Frontend {
                                 ?>
                             </span>
                         </label>
-                        <input type="file" name="file_upload[]" id="file_upload" multiple required accept="image/*" 
+                        <input type="file" name="file_upload[]" id="file_upload" multiple required accept="image/*,application/pdf" 
                                max="<?php echo esc_attr($max_file_count - $uploaded_count); ?>">
                     </div>
 
@@ -353,6 +353,9 @@ class Yitu_Upload_Frontend {
                     $oss = new Yitu_Upload_OSS();
                     $signed_url = $oss->get_signed_url($file->file_url, 300); // 5分钟有效期
                     
+                    // 获取文件扩展名
+                    $file_ext = strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION));
+                    
                     echo '<li class="yitu-file-item" data-file-id="' . esc_attr($file->id) . '">';
                     echo '<div class="file-info">';
                     echo '<span class="file-name">' . esc_html($file->file_name) . '</span>';
@@ -363,11 +366,21 @@ class Yitu_Upload_Frontend {
                     echo '</div>';
                     
                     if ($signed_url) {
-                        // 添加图片预览
                         echo '<div class="file-preview">';
-                        echo '<a href="' . esc_url($signed_url) . '" class="preview-link" data-fancybox="gallery">';
-                        echo '<img src="' . esc_url($signed_url) . '" class="preview-image" />';
-                        echo '</a>';
+                        if ($file_ext === 'pdf') {
+                            // PDF文件显示
+                            echo '<div class="pdf-preview">';
+                            echo '<div class="pdf-icon"><i class="dashicons dashicons-pdf"></i></div>';
+                            echo '<a href="' . esc_url($signed_url) . '" class="pdf-link" target="_blank">';
+                            echo esc_html__('Ver PDF', 'yitu-upload-wc');
+                            echo '</a>';
+                            echo '</div>';
+                        } else {
+                            // 图片文件显示
+                            echo '<a href="' . esc_url($signed_url) . '" class="preview-link" data-fancybox="gallery">';
+                            echo '<img src="' . esc_url($signed_url) . '" class="preview-image" alt="' . esc_attr($file->file_name) . '" />';
+                            echo '</a>';
+                        }
                         echo '</div>';
                         
                         // 添加删除按钮
@@ -377,7 +390,7 @@ class Yitu_Upload_Frontend {
                         echo '</button>';
                         echo '</div>';
                     } else {
-                        echo '<p class="error">' . esc_html__('Error al cargar la imagen', 'yitu-upload-wc') . '</p>';
+                        echo '<p class="error">' . esc_html__('Error al cargar el archivo', 'yitu-upload-wc') . '</p>';
                     }
                     echo '</li>';
                 }
@@ -430,6 +443,41 @@ class Yitu_Upload_Frontend {
                 .preview-image:hover {
                     transform: scale(1.05);
                 }
+                .pdf-preview {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    padding: 15px;
+                    background: #f5f5f5;
+                    border-radius: 4px;
+                }
+                .pdf-icon {
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .pdf-icon .dashicons-pdf {
+                    font-size: 32px;
+                    width: 32px;
+                    height: 32px;
+                    color: #e74c3c;
+                }
+                .pdf-link {
+                    color: #333;
+                    text-decoration: none;
+                    font-weight: 500;
+                    padding: 8px 16px;
+                    background: #fff;
+                    border-radius: 4px;
+                    transition: all 0.2s ease;
+                }
+                .pdf-link:hover {
+                    background: #e74c3c;
+                    color: #fff;
+                    text-decoration: none;
+                }
                 .file-actions {
                     margin-top: 10px;
                 }
@@ -448,6 +496,7 @@ class Yitu_Upload_Frontend {
             // 添加JavaScript
             wp_enqueue_script('fancybox', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js', array('jquery'), '5.0', true);
             wp_enqueue_style('fancybox', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css');
+            wp_enqueue_style('dashicons');
             
             wp_add_inline_script('fancybox', '
                 jQuery(document).ready(function($) {

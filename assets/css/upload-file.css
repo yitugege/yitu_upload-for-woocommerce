@@ -19,7 +19,7 @@
 
 /* 上传区域容器 */
 .file-upload-section {
-    max-width: 720px;
+    max-width: auto;
     margin: 2rem auto;
     padding: 2rem;
     background: white;
@@ -199,4 +199,49 @@
     border-color: var(--primary);
     background: var(--gray-200);
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+.file-icon.pdf {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #e74c3c;
+    position: relative;
+    overflow: hidden;
+}
+
+.file-icon.pdf::before {
+    content: "PDF";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.file-success {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-success .dashicons-pdf {
+    color: #e74c3c;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.file-success a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.file-success a:hover {
+    text-decoration: underline;
 }

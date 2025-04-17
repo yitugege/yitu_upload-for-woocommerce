@@ -1,0 +1,202 @@
+/* 主题变量 */
+:root {
+    --primary: #3498db;
+    --primary-dark: #2980b9;
+    --success: #2ecc71;
+    --error: #e74c3c;
+    --gray-100: #f7fafc;
+    --gray-200: #edf2f7;
+    --gray-300: #e2e8f0;
+    --gray-400: #cbd5e0;
+    --gray-500: #a0aec0;
+    --gray-600: #718096;
+    --gray-700: #4a5568;
+    --text-dark: #2d3748;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* 上传区域容器 */
+.file-upload-section {
+    max-width: 720px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+}
+
+.file-upload-section h2 {
+    margin: 0 0 1rem;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.file-upload-section p {
+    margin-bottom: 1.5rem;
+    color: var(--gray-600);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* 表单样式 */
+#file-upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-row {
+    position: relative;
+}
+
+.form-row label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--gray-700);
+    font-weight: 500;
+}
+
+.form-row .description {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--gray-500);
+    font-size: 0.875rem;
+}
+
+/* 文件上传控件 */
+.form-row input[type="file"] {
+    display: block;
+    width: 100%;
+    padding: 2rem;
+    background: var(--gray-100);
+    border: 2px dashed var(--gray-300);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-row input[type="file"]:hover {
+    border-color: var(--primary);
+    background: var(--gray-200);
+}
+
+.form-row input[type="file"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+/* 上传按钮 */
+.form-row button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    padding: 0.75rem 1.5rem;
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    background: var(--primary);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-row button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.form-row button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 上传状态提示 */
+.upload-status {
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 6px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.upload-status.success {
+    background: #f0fff4;
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.upload-status.error {
+    background: #fff5f5;
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.upload-status p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* 图片预览 */
+.upload-status img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-top: 1rem;
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+}
+
+/* 成功通知 */
+.woocommerce-notice--success {
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+    color: var(--success);
+    background: #f0fff4;
+    border-left: 4px solid var(--success);
+    border-radius: 4px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .file-upload-section {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    .form-row input[type="file"] {
+        padding: 1.5rem;
+    }
+}
+
+/* 无障碍支持 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 拖放区域高亮 */
+.form-row input[type="file"].dragover {
+    border-color: var(--primary);
+    background: var(--gray-200);
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}

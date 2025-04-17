@@ -1,0 +1,13 @@
+{
+    "name": "yitu/yitu_upload-for-woocommerce",
+    "description": "WooCommerce plugin for uploading payment proof to Aliyun OSS",
+    "type": "wordpress-plugin",
+    "require": {
+        "aliyuncs/oss-sdk-php": "^2.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Yitu\\Upload\\": "includes/"
+        }
+    }
+} 

@@ -187,9 +187,14 @@ class Yitu_Upload_Admin {
                 if ($signed_url) {
                     if ($file_ext === 'pdf') {
                         // PDF文件显示
-                        echo '<div class="pdf-preview" onclick="window.open(\'' . esc_url($signed_url) . '\', \'_blank\');">';
+                        echo '<div class="pdf-preview-container">';
+                        echo '<div class="pdf-preview">';
+                        echo '<a href="' . esc_url($signed_url) . '" target="_blank" class="pdf-link">';
                         echo '<div class="pdf-icon"><i class="dashicons dashicons-pdf"></i></div>';
-                        echo '<span class="pdf-text">' . esc_html__('Ver PDF', 'yitu-upload-wc') . '</span>';
+                        echo '<div class="pdf-info">';
+                        echo '</div>';
+                        echo '</a>';
+                        echo '</div>';
                         echo '</div>';
                     } else {
                         // 图片文件显示
@@ -228,8 +233,8 @@ class Yitu_Upload_Admin {
                 }
                 .preview-link {
                     display: block;
-                    width: 50px;
-                    height: 50px;
+                    width: 30px;
+                    height: 30px;
                     border-radius: 4px;
                     overflow: hidden;
                     border: 1px solid #ddd;
@@ -246,8 +251,8 @@ class Yitu_Upload_Admin {
                     display: block;
                 }
                 .pdf-preview {
-                    width: 50px;
-                    height: 50px;
+                    width: 30px;
+                    height: 30px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;

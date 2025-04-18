@@ -27,7 +27,13 @@ class Yitu_Upload_Admin {
         add_action('manage_woocommerce_page_wc-orders_custom_column', [$this, 'display_order_upload_file'], 10, 2);
 
         // 添加订单元数据框
-       // add_action('add_meta_boxes', [$this, 'add_order_meta_boxes']);
+        add_action('add_meta_boxes', [$this, 'add_order_meta_boxes']);
+        
+        // // 添加HPOS模式的meta box支持
+        // if (class_exists('\Automattic\WooCommerce\Utilities\OrderUtil') && 
+        //     \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()) {
+        //     add_action('woocommerce_admin_order_data_after_order_details', [$this, 'render_upload_file_meta_box_hpos']);
+        // }
     }
 
     /**
@@ -310,35 +316,61 @@ class Yitu_Upload_Admin {
      * 添加订单元数据框
      */
     public function add_order_meta_boxes() {
-        add_meta_box(
-            'yitu_upload_upload_file',
-            __('Comprobante de pago', 'yitu-upload-wc'),
-            [$this, 'render_upload_file_meta_box'],
-            'shop_order',
-            'side',
-            'default'
-        );
+        
+        // 检查是否使用HPOS模式
+        if (class_exists('\Automattic\WooCommerce\Utilities\OrderUtil') && 
+            \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()) {
+            // HPOS模式
+            add_meta_box(
+                'yitu_upload_upload_file',
+                __('Comprobante de pago', 'yitu-upload-wc'),
+                [$this, 'render_upload_file_meta_box'],
+                'woocommerce_page_wc-orders',
+                'side',
+                'default'
+            );
+            error_log('Added meta box for HPOS mode');
     }
-
+}
     /**
      * 渲染上传文件元框
      */
     public function render_upload_file_meta_box($post) {
-        $order = wc_get_order($post);
+        
+        // 检查是否使用HPOS模式
+        if (class_exists('\Automattic\WooCommerce\Utilities\OrderUtil') && 
+            \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()) {
+            // HPOS模式
+            if (is_numeric($post)) {
+                $order_id = $post;
+            } else {
+                $order_id = $post->get_id();
+            }
+            $order = wc_get_order($order_id);
+        } else {
+            // 传统模式
+            $order = wc_get_order($post);
+        }
+        
         if (!$order) {
+            error_log('Order not found in render_upload_file_meta_box');
             return;
         }
-
+        
+        error_log('Order found: ' . $order->get_id());
+        
         global $wpdb;
         $files = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}yitu_upload_files WHERE order_id = %d",
             $order->get_id()
         ));
-
-        if (false) {
+        error_log('Files found: ' . count($files));
+        
+        if (!empty($files)) {
             // 加载Fancybox资源
             wp_enqueue_script('fancybox', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js', array('jquery'), '5.0', true);
             wp_enqueue_style('fancybox', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css');
+            wp_enqueue_style('dashicons');
 
             echo '<div class="upload-file-images">';
             foreach ($files as $file) {
@@ -346,17 +378,36 @@ class Yitu_Upload_Admin {
                 require_once YITU_UPLOAD_PLUGIN_DIR . 'includes/class-yitu-upload-oss.php';
                 $oss = new Yitu_Upload_OSS();
                 $signed_url = $oss->get_signed_url($file->file_url, 300); // 5分钟有效期
+                $file_ext = strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION));
+                
                 if ($signed_url) {
-                    echo '<div class="upload-file-image">';
-                    echo '<a href="' . esc_url($signed_url) . '" data-fancybox="gallery" data-caption="' . esc_attr($file->file_name) . '">';
-                    echo '<img src="' . esc_url($signed_url) . '" style="max-width: 150px; height: auto; border-radius: 4px; cursor: pointer;" />';
-                    echo '</a>';
-                    echo '<p class="filename">' . esc_html($file->file_name) . '</p>';
-                    echo '<p class="upload-time">' . esc_html(wp_date(
-                        get_option('date_format') . ' ' . get_option('time_format'),
-                        strtotime($file->upload_time)
-                    )) . '</p>';
-                    echo '</div>';
+                    if ($file_ext === 'pdf') {
+                        // 重新设计的PDF预览
+                        echo '<div class="pdf-preview-container">';
+                        echo '<div class="pdf-preview" onclick="window.open(\'' . esc_url($signed_url) . '\', \'_blank\');">';
+                        echo '<div class="pdf-icon"><i class="dashicons dashicons-pdf"></i></div>';
+                        echo '<div class="pdf-info">';
+                        echo '<span class="pdf-filename">' . esc_html($file->file_name) . '</span>';
+                        echo '<span class="pdf-text">' . esc_html__('Ver PDF', 'yitu-upload-wc') . '</span>';
+                        echo '</div>';
+                        echo '</div>';
+                        echo '<div class="pdf-upload-time">' . esc_html(wp_date(
+                            get_option('date_format') . ' ' . get_option('time_format'),
+                            strtotime($file->upload_time)
+                        )) . '</div>';
+                        echo '</div>';
+                    } else {
+                        echo '<div class="upload-file-image">';
+                        echo '<a href="' . esc_url($signed_url) . '" data-fancybox="gallery" data-caption="' . esc_attr($file->file_name) . '">';
+                        echo '<img src="' . esc_url($signed_url) . '" style="max-width: 150px; height: auto; border-radius: 4px; cursor: pointer;" />';
+                        echo '</a>';
+                        echo '<p class="filename">' . esc_html($file->file_name) . '</p>';
+                        echo '<p class="upload-time">' . esc_html(wp_date(
+                            get_option('date_format') . ' ' . get_option('time_format'),
+                            strtotime($file->upload_time)
+                        )) . '</p>';
+                        echo '</div>';
+                    }
                 } else {
                     echo '<p class="error">' . esc_html__('Error loading image', 'yitu-upload-wc') . '</p>';
                 }
@@ -402,6 +453,70 @@ class Yitu_Upload_Admin {
                     color: #dc3545;
                     margin: 10px 0;
                 }
+                
+                /* 重新设计的PDF样式 */
+                .pdf-preview-container {
+                    background: #fff;
+                    padding: 15px;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                    transition: all 0.3s ease;
+                    margin-bottom: 15px;
+                }
+                .pdf-preview-container:hover {
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+                    transform: translateY(-2px);
+                }
+                .pdf-preview {
+                    display: flex;
+                    align-items: center;
+                    background: #f8f9fa;
+                    border-radius: 6px;
+                    padding: 12px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                .pdf-preview:hover {
+                    background: #e9ecef;
+                }
+                .pdf-icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 40px;
+                    height: 40px;
+                    background: #e74c3c;
+                    border-radius: 6px;
+                    margin-right: 12px;
+                }
+                .pdf-icon .dashicons-pdf {
+                    font-size: 24px;
+                    width: 24px;
+                    height: 24px;
+                    color: #fff;
+                }
+                .pdf-info {
+                    display: flex;
+                    flex-direction: column;
+                }
+                .pdf-filename {
+                    font-weight: 500;
+                    font-size: 14px;
+                    color: #333;
+                    margin-bottom: 4px;
+                    word-break: break-all;
+                }
+                .pdf-text {
+                    font-size: 12px;
+                    color: #0073aa;
+                    font-weight: 500;
+                }
+                .pdf-upload-time {
+                    font-size: 11px;
+                    color: #666;
+                    margin-top: 8px;
+                    text-align: right;
+                }
             </style>';
 
             // 初始化Fancybox
@@ -422,4 +537,6 @@ class Yitu_Upload_Admin {
             echo '<p>' . __('No comprobante de pago subido todavía.', 'yitu-upload-wc') . '</p>';
         }
     }
+
+    
 } 

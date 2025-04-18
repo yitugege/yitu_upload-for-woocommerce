@@ -39,7 +39,7 @@ class Yitu_Upload {
         register_activation_hook(YITU_UPLOAD_PLUGIN_DIR . 'yitu_upload-for-woocommerce.php', [$this, 'activate']);
 
         // 初始化管理员界面
-        if (is_admin()) {
+        if (current_user_can('edit_posts')) {
             new Yitu_Upload_Admin();
         }
 

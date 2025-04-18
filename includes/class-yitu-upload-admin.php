@@ -29,11 +29,8 @@ class Yitu_Upload_Admin {
         // 添加订单元数据框
         add_action('add_meta_boxes', [$this, 'add_order_meta_boxes']);
         
-        // // 添加HPOS模式的meta box支持
-        // if (class_exists('\Automattic\WooCommerce\Utilities\OrderUtil') && 
-        //     \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()) {
-        //     add_action('woocommerce_admin_order_data_after_order_details', [$this, 'render_upload_file_meta_box_hpos']);
-        // }
+       //在screen-option中添加一个选项，显示订单的支付凭证
+       add_filter('screen_options', [$this, 'add_screen_options']);
     }
 
     /**
@@ -538,5 +535,14 @@ class Yitu_Upload_Admin {
         }
     }
 
+
+    /**
+     * 添加screen-option选项
+     */
+    public function add_screen_options($screen_options) {
+        $screen_options['subpage'] = 'yitu-upload-settings';
+        return $screen_options;
+    }
+    
     
 } 

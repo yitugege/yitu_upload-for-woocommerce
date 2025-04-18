@@ -72,7 +72,10 @@ class Yitu_Upload_OSS {
         $bucket = get_option('yitu_upload_bucket');
         try {
             // 生成带签名的临时URL
-            return $this->ossClient->signUrl($bucket, $object, $timeout);
+            $signed_url = $this->ossClient->signUrl($bucket, $object, $timeout);
+            // 将signed_url中的http://替换为https://
+            $signed_url = str_replace('http://', 'https://', $signed_url);
+            return $signed_url;
         } catch (OSS\Core\OssException $e) {
             error_log('Error generating signed URL: ' . $e->getMessage());
             return false;

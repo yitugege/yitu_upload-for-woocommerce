@@ -16,6 +16,13 @@
 
 defined('ABSPATH') || exit;
 
+// HPOS兼容性声明
+add_action('before_woocommerce_init', function() {
+    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+    }
+});
+
 if (!defined('YITU_UPLOAD_VERSION')) {
     define('YITU_UPLOAD_VERSION', '1.0.0');
 }

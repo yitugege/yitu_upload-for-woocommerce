@@ -15,12 +15,7 @@ class Yitu_Upload_Admin {
         // 注册设置
         add_action('admin_init', [$this, 'register_settings']);
 
-        // HPOS兼容性声明
-        add_action('before_woocommerce_init', function() {
-            if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
-            }
-        });
+
 
         // 添加订单列
         add_filter('manage_woocommerce_page_wc-orders_columns', [$this, 'add_upload_file_column']);

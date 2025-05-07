@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Yitu Upload for WooCommerce
- * Plugin URI: https://www.ele-gate.com
+ * Plugin URI:  
  * Description: 允许用户在结账时上传支付凭证到阿里云OSS，并在HPOS订单管理界面查看
  * Version: 1.0.0
  * Author: Yitu
- * Author URI: https://www.ele-gate.com
+ * Author URI:  
  * Text Domain: yitu-upload-wc
  * Domain Path: /languages
  * Requires at least: 5.8
